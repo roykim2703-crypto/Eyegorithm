@@ -13,7 +13,11 @@ public class TreeFloor : MonoBehaviour
             return;
         }
 
-        if (treeManager != null && treeManager.IsFull())
+        if (treeManager != null && ball.isSameNumber)
+        {
+            treeManager.ShowAlreadyExists(ball.Number);
+        }
+        else if (treeManager != null && (ball.isTreeFull || treeManager.IsFull()))
         {
             treeManager.ShowFull();
         }

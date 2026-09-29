@@ -1,9 +1,63 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BallManager : MonoBehaviour
 {
     public BallNumber ballNumber;
     public Ballspawn ballSpawner;
+    private GameObject selectUI;
+    private bool oldBallFalling;
+    private bool firstCheck = true;
+
+    private void Awake()
+    {
+        if (Camera.main != null && Camera.main.GetComponent<FixedAspectCamera>() == null)
+        {
+            Camera.main.gameObject.AddComponent<FixedAspectCamera>();
+        }
+
+        AddButtonListener("Search", CreateSearchBall);
+        AddButtonListener("Delate", CreateDeleteBall);
+        AddButtonListener("Delete", CreateDeleteBall);
+    }
+
+    private void AddButtonListener(string buttonName, UnityEngine.Events.UnityAction action)
+    {
+        Button[] buttons = FindObjectsByType<Button>(FindObjectsInactive.Include);
+
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            if (buttons[i].gameObject.name == buttonName)
+            {
+                buttons[i].onClick.AddListener(action);
+                return;
+            }
+        }
+    }
+
+    private void Update()
+    {
+        TreeBall[] balls = FindObjectsByType<TreeBall>();
+        bool ballFalling = false;
+
+        for (int i = 0; i < balls.Length; i++)
+        {
+            InsertBall insertBall = balls[i] as InsertBall;
+
+            if (insertBall == null || !insertBall.isPin)
+            {
+                ballFalling = true;
+                break;
+            }
+        }
+
+        if (firstCheck || oldBallFalling != ballFalling)
+        {
+            ShowOperationUI(!ballFalling);
+            oldBallFalling = ballFalling;
+            firstCheck = false;
+        }
+    }
 
     public void CreateInsertBall()
     {
@@ -40,5 +94,32 @@ public class BallManager : MonoBehaviour
         {
             ballNumber.ClearNumber();
         }
+    }
+
+    public void ShowOperationUI(bool show)
+    {
+        if (selectUI == null)
+        {
+            GameObject[] roots = gameObject.scene.GetRootGameObjects();
+
+            for (int i = 0; i < roots.Length; i++)
+            {
+                if (roots[i].name == "Select")
+                {
+                    selectUI = roots[i];
+                    break;
+                }
+            }
+        }
+
+        if (selectUI != null)
+        {
+            selectUI.SetActive(show);
+        }
+    }
+
+    public bool IsOperationUIVisible()
+    {
+        return selectUI != null && selectUI.activeSelf;
     }
 }

@@ -184,7 +184,7 @@ public static class BagatreeTreeSetup
         renderer.sortingOrder = 10;
 
         Rigidbody2D rigid = ballObject.AddComponent<Rigidbody2D>();
-        rigid.gravityScale = 1.8f;
+        rigid.gravityScale = 1.1f;
         rigid.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         rigid.interpolation = RigidbodyInterpolation2D.Interpolate;
 
@@ -194,7 +194,15 @@ public static class BagatreeTreeSetup
 
         InsertBall insertBall = ballObject.AddComponent<InsertBall>();
         insertBall.pinSprite = pinSprite;
+        insertBall.ballScale = 0.23f;
+        insertBall.ballSizeRange = 0.05f;
         insertBall.pinScale = 0.15f;
+        insertBall.pinSizeRange = 0.03f;
+        insertBall.moveSpeed = 3.4f;
+        insertBall.startDelay = 0.45f;
+        insertBall.bounceHeight = 0.5f;
+        insertBall.reboundHeight = 0.14f;
+        insertBall.spinAngle = 120f;
 
         GameObject prefab = PrefabUtility.SaveAsPrefabAsset(ballObject, BallPrefabPath);
         Object.DestroyImmediate(ballObject);

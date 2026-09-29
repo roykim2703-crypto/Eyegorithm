@@ -11,8 +11,19 @@ public sealed class FixedAspectCamera : MonoBehaviour
     [SerializeField, Min(0.01f)] private float fixedOrthographicSize = 5f;
     [SerializeField] private Color barColor = Color.black;
 
+    [Header("Ball Follow")]
+    [SerializeField] private Vector2 followOffset = new Vector2(0, -0.45f);
+    [SerializeField, Min(0.01f)] private float followSmoothTime = 0.16f;
+    [SerializeField, Min(0.01f)] private float returnSmoothTime = 0.3f;
+    [SerializeField, Min(0.01f)] private float followOrthographicSize = 3.25f;
+    [SerializeField, Min(0.01f)] private float zoomInSmoothTime = 0.18f;
+    [SerializeField, Min(0.01f)] private float zoomOutSmoothTime = 0.32f;
+
     private Camera targetCamera;
     private Camera backgroundCamera;
+    private Vector3 startPosition;
+    private Vector3 followVelocity;
+    private float zoomVelocity;
     private int previousScreenWidth;
     private int previousScreenHeight;
 
@@ -20,9 +31,56 @@ public sealed class FixedAspectCamera : MonoBehaviour
     {
         targetCamera = GetComponent<Camera>();
         targetCamera.orthographic = true;
+        startPosition = transform.position;
 
         CreateBackgroundCamera();
         ApplyAspectRatio();
+    }
+
+    private void LateUpdate()
+    {
+        Transform ball = FindMovingBall();
+        Vector3 targetPosition = startPosition;
+        float smoothTime = returnSmoothTime;
+
+        if (ball != null)
+        {
+            targetPosition.x = ball.position.x + followOffset.x;
+            targetPosition.y = ball.position.y + followOffset.y;
+            smoothTime = followSmoothTime;
+        }
+
+        targetPosition.z = startPosition.z;
+        transform.position = Vector3.SmoothDamp(
+            transform.position,
+            targetPosition,
+            ref followVelocity,
+            smoothTime);
+
+        float targetSize = ball == null ? fixedOrthographicSize : followOrthographicSize;
+        float zoomTime = ball == null ? zoomOutSmoothTime : zoomInSmoothTime;
+        targetCamera.orthographicSize = Mathf.SmoothDamp(
+            targetCamera.orthographicSize,
+            targetSize,
+            ref zoomVelocity,
+            zoomTime);
+    }
+
+    private Transform FindMovingBall()
+    {
+        TreeBall[] balls = FindObjectsByType<TreeBall>();
+
+        for (int i = 0; i < balls.Length; i++)
+        {
+            InsertBall insertBall = balls[i] as InsertBall;
+
+            if (insertBall == null || !insertBall.isPin)
+            {
+                return balls[i].transform;
+            }
+        }
+
+        return null;
     }
 
     private void Update()

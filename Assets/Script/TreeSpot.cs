@@ -7,6 +7,21 @@ public class TreeSpot : MonoBehaviour
     public TreeSpot rightSpot;
     public bool isFull;
     public int number;
+    public InsertBall pin;
+
+    public void SetPin(InsertBall newPin)
+    {
+        pin = newPin;
+        isFull = newPin != null;
+        number = newPin == null ? 0 : newPin.Number;
+    }
+
+    public void ClearPin()
+    {
+        pin = null;
+        isFull = false;
+        number = 0;
+    }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -17,13 +32,16 @@ public class TreeSpot : MonoBehaviour
             return;
         }
 
+        if (ball.targetSpot != this)
+        {
+            return;
+        }
+
         if (parentSpot != null && !parentSpot.isFull)
         {
             return;
         }
 
-        isFull = true;
-        number = ball.Number;
         ball.BecomePin(this);
     }
 
